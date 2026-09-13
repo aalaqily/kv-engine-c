@@ -1,21 +1,35 @@
-default: build
+default: workflow
 
-# Create build dir
-[arg('clean', pattern='--clean|')]
-create clean="" *args:
-    if [ -n '{{clean}}' ]; then rm build/ -rf; fi
-    cmake -B build/ninja-multi -G "Ninja Multi-Config" {{args}}
+preset := "ninja-multi"
+config := "Debug"
+clean := "0"
+verbose := "0"
 
-# Duild (Debug config - Default)
-build *args:
-    cmake --build build/ninja-multi {{args}}
+verbose_flag := if verbose == "1" { "--verbose" } else { "" }
 
-# Build (Release config)
-build-release *args: (build "--config" "Release" args)
+_clean_hook:
+    @if [ "{{clean}}" = "1" ]; then rm -rf build/; fi
 
-build-unit-tests *args: (build "--target" "unit_tests" args)
+# Run CMake workflow preset
+workflow *args: _clean_hook
+    cmake --workflow --preset {{preset}} {{args}}
 
-test-unit-tests *args: build-unit-tests
-    ctest --test-dir build/ninja-multi -C Debug --output-on-failure {{args}}
+# Configure project
+configure *args: _clean_hook
+    cmake --preset {{preset}} --config {{config}} {{verbose_flag}} {{args}}
 
-test *args: (test-unit-tests args)
+# Build project
+build config=config *args: _clean_hook
+    cmake --build --preset {{preset}} --config {{config}} {{verbose_flag}} {{args}}
+
+# Build project with Release config
+build-release *args: (build "Release" args)
+
+# Build unit tests executable
+build-unit-tests config=config *args: (build config "--target" "unit_tests" args)
+
+# Run CTest suite using preset and -C flag for config
+test-unit-tests config=config *args: (build-unit-tests config args)
+    ctest --preset {{preset}} -C {{config}} {{verbose_flag}} {{args}}
+
+test *args: (test-unit-tests config args)

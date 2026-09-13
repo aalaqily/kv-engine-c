@@ -1,0 +1,55 @@
+{
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}"
+        },
+        {
+            "name": "ninja-multi",
+            "inherits": "base",
+            "generator": "Ninja Multi-Config"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "ninja-multi",
+            "configurePreset": "ninja-multi"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "ninja-multi",
+            "configurePreset": "ninja-multi",
+            "configuration": "Debug",
+            "execution": {
+                "outputOnFailure": true
+            }
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "ninja-multi",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "ninja-multi"
+                },
+                {
+                    "type": "build",
+                    "name": "ninja-multi"
+                },
+                {
+                    "type": "test",
+                    "name": "ninja-multi"
+                }
+            ]
+        }
+    ]
+}
