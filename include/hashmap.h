@@ -21,5 +21,6 @@ bool hashmap_contains(const HashMap *map, const char *key);
 /* Metadata */
 
 size_t hashmap_size(const HashMap *map);
+size_t hashmap_capacity(const HashMap *map);
 
 #endif // HASHMAP_H
