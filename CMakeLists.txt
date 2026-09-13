@@ -44,3 +44,15 @@ target_compile_options(kv-engine-core PRIVATE
     -Wpedantic
     -Werror
 )
+
+# Enable testing
+enable_testing()
+
+# Add test executable target
+add_executable(unit_tests tests/test_hashmap.c)
+
+# Link library target (kv-engine-core) and xxHash
+target_link_libraries(unit_tests PRIVATE kv-engine::core)
+
+# Register exectuable with CTest driver
+add_test(NAME UnitTests COMMAND unit_tests)

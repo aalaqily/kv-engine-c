@@ -12,3 +12,10 @@ build *args:
 
 # Build (Release config)
 build-release *args: (build "--config" "Release" args)
+
+build-unit-tests *args: (build "--target" "unit_tests" args)
+
+test-unit-tests *args: build-unit-tests
+    ctest --test-dir build/ninja-multi -C Debug --output-on-failure {{args}}
+
+test *args: (test-unit-tests args)
