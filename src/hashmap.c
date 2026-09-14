@@ -13,7 +13,6 @@ typedef struct HashNode {
     struct HashNode *next;
 } HashNode;
 
-
 struct HashMap {
     HashNode **buckets;
     size_t capacity;
@@ -25,6 +24,8 @@ static size_t helper_hash(const char *key) {
     // XXH64(data, length, seed)
     return (size_t) XXH64(key, strlen(key), 0);
 }
+
+/* Container Functions */
 
 HashMap *hashmap_create(size_t initial_capacity) {
     if (initial_capacity == 0) {
@@ -47,6 +48,55 @@ HashMap *hashmap_create(size_t initial_capacity) {
 
     return map;
 }
+
+void hashmap_destroy(HashMap *map) {
+    if (!map)
+        return;
+
+    for (size_t i = 0; i < map->capacity; i++) {
+        HashNode *current = map->buckets[i];
+        while (current != NULL) {
+            HashNode *next = current->next;
+            free(current->key);
+            free(current);
+            current = next;
+        }
+    }
+
+    free(map->buckets);
+    free(map);
+}
+
+bool hashmap_resize_to(HashMap *map, size_t new_capacity) {
+    if (!(map && new_capacity > 0))
+        return false;
+
+    HashNode **new_buckets = calloc(new_capacity, sizeof(HashNode *));
+    if (!new_buckets)
+        return false;
+
+
+    for (size_t i = 0; i < hashmap_capacity(map); i++) {
+        HashNode *current = map->buckets[i];
+        while (current != NULL) {
+            HashNode *next = current->next;
+
+            size_t new_index = helper_hash(current->key) % new_capacity;
+
+            current->next = new_buckets[new_index];
+            new_buckets[new_index] = current;
+
+            current = next;
+        }
+    }
+
+    free(map->buckets);
+    map->buckets = new_buckets;
+    map->capacity = new_capacity;
+    return true;
+}
+
+/* Element Functions  */
 
 bool hashmap_put(HashMap *map, const char *key, void *value) {
     if (!(map && key))
@@ -149,23 +199,7 @@ bool hashmap_contains(const HashMap *map, const char *key) {
     return false;
 }
 
-void hashmap_destroy(HashMap *map) {
-    if (!map)
-        return;
-
-    for (size_t i = 0; i < map->capacity; i++) {
-        HashNode *current = map->buckets[i];
-        while (current != NULL) {
-            HashNode *next = current->next;
-            free(current->key);
-            free(current);
-            current = next;
-        }
-    }
-
-    free(map->buckets);
-    free(map);
-}
+/* Metadata Functions  */
 
 size_t hashmap_size(const HashMap *map) {
     if (!map)

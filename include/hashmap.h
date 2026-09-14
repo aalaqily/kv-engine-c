@@ -6,19 +6,20 @@
 
 typedef struct HashMap HashMap;
 
-/* Helper Functions */
+/* Container Functions */
 
 HashMap *hashmap_create(size_t initial_capacity);
 void hashmap_destroy(HashMap *map);
+bool hashmap_resize_to(HashMap *map, size_t new_capacity);
 
-/* Core Functions */
+/* Element Functions  */
 
 bool hashmap_put(HashMap *map, const char *key, void *value);
 void *hashmap_get(const HashMap *map, const char *key);
 bool hashmap_remove(HashMap *map, const char *key);
 bool hashmap_contains(const HashMap *map, const char *key);
 
-/* Metadata */
+/* Metadata Functions  */
 
 size_t hashmap_size(const HashMap *map);
 size_t hashmap_capacity(const HashMap *map);
