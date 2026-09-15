@@ -98,9 +98,15 @@ bool hashmap_resize_to(HashMap *map, size_t new_capacity) {
 
 /* Element Functions  */
 
+#define RESIZE_FACTOR 2
+
 bool hashmap_put(HashMap *map, const char *key, void *value) {
     if (!(map && key))
         return false;
+
+    if (hashmap_size(map) >= 0.75 * hashmap_capacity(map))
+        if (!hashmap_resize_to(map, hashmap_capacity(map) * RESIZE_FACTOR))
+            return false;
 
     size_t index = helper_hash(key) % map->capacity;
 

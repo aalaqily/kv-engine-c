@@ -12,8 +12,6 @@
         printf(" PASSED\n"); \
     } while(0)
 
-
-
 static void test_create_destroy(void) {
 
     HashMap *map = hashmap_create(32);
@@ -24,6 +22,13 @@ static void test_create_destroy(void) {
     assert(hashmap_capacity(map) == 32);
 
     hashmap_destroy(map);
+}
+
+static void test_resize_to(void) {
+    HashMap *map = hashmap_create(32);
+    hashmap_resize_to(map, 32);
+
+    assert(hashmap_capacity(map) == 32);
 }
 
 static void test_put_and_get(void) {
@@ -43,6 +48,17 @@ static void test_put_and_get(void) {
     assert(hashmap_size(map) == 1);
 
     hashmap_destroy(map);
+}
+
+static void test_dynamic_resize() {
+    HashMap *map = hashmap_create(4);
+
+    hashmap_put(map, "key1", (void *) 1);
+    hashmap_put(map, "key2", (void *) 2);
+    hashmap_put(map, "key3", (void *) 3);
+    hashmap_put(map, "key4", (void *) 4);
+
+    assert(hashmap_capacity(map) == 8);
 }
 
 static void test_collisions(void) {
@@ -102,7 +118,9 @@ int main(void) {
     printf("=== RUNNING HashMap unit tests ===\n");
 
     RUN_TEST(test_create_destroy);
+    RUN_TEST(test_resize_to);
     RUN_TEST(test_put_and_get);
+    RUN_TEST(test_dynamic_resize);
     RUN_TEST(test_collisions);
     RUN_TEST(test_remove);
 
