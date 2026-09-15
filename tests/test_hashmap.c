@@ -29,6 +29,8 @@ static void test_resize_to(void) {
     hashmap_resize_to(map, 32);
 
     assert(hashmap_capacity(map) == 32);
+
+    hashmap_destroy(map);
 }
 
 static void test_put_and_get(void) {
@@ -59,6 +61,8 @@ static void test_dynamic_resize() {
     hashmap_put(map, "key4", (void *) 4);
 
     assert(hashmap_capacity(map) == 8);
+
+    hashmap_destroy(map);
 }
 
 static void test_collisions(void) {

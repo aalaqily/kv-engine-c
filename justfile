@@ -32,4 +32,7 @@ build-unit-tests config=config *args: (build config "--target" "unit_tests" args
 test-unit-tests config=config *args: (build-unit-tests config args)
     ctest --preset {{preset}} -C {{config}} {{verbose_flag}} {{args}}
 
-test *args: (test-unit-tests config args)
+test-valgrind config=config *args: (build-unit-tests config)
+    valgrind {{args}} build/{{preset}}/{{config}}/unit_tests
+
+test *args: (test-unit-tests config args) (test-valgrind config)
