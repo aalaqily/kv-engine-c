@@ -4,7 +4,18 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-typedef struct HashMap HashMap;
+typedef struct HashNode {
+    char *key;
+    void *value;
+    struct HashNode *next;
+} HashNode;
+
+typedef struct HashMap {
+    HashNode **buckets;
+    size_t capacity;
+    size_t size;
+} HashMap;
+
 
 /* Container Functions */
 

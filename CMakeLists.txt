@@ -20,6 +20,7 @@ FetchContent_MakeAvailable(xxhash)
 # Core library target
 add_library(kv-engine-core
     src/hashmap.c
+    src/db.c
 )
 
 # Alias target for cleaner internal consumption
@@ -49,10 +50,19 @@ target_compile_options(kv-engine-core PRIVATE
 enable_testing()
 
 # Add test executable target
-add_executable(unit_tests tests/test_hashmap.c)
+add_executable(hashmap_unit_tests tests/test_hashmap.c)
 
 # Link library target (kv-engine-core) and xxHash
-target_link_libraries(unit_tests PRIVATE kv-engine::core)
+target_link_libraries(hashmap_unit_tests PRIVATE kv-engine::core)
 
 # Register exectuable with CTest driver
-add_test(NAME UnitTests COMMAND unit_tests)
+add_test(NAME HashMapUnitTests COMMAND hashmap_unit_tests)
+
+# Add test executable target
+add_executable(db_unit_tests tests/test_db.c)
+
+# Link library target (kv-engine-core) and xxHash
+target_link_libraries(db_unit_tests PRIVATE kv-engine::core)
+
+# Register exectuable with CTest driver
+add_test(NAME DBUnitTests COMMAND db_unit_tests)

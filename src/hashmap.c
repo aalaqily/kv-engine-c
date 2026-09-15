@@ -7,18 +7,6 @@
 #define DEFAULT_CAPACITY 16
 #define LOAD_FACTOR_THRESHOLD 0.75f
 
-typedef struct HashNode {
-    char *key;
-    void *value;
-    struct HashNode *next;
-} HashNode;
-
-struct HashMap {
-    HashNode **buckets;
-    size_t capacity;
-    size_t size;
-};
-
 // Internal helper using xxHash (64-bit hash)
 static size_t helper_hash(const char *key) {
     // XXH64(data, length, seed)

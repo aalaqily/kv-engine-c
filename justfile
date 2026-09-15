@@ -27,7 +27,7 @@ build-release *args:
     just config="Release" build {{args}}
 
 # Build unit tests executable
-build-unit-tests *args: (build "--target" "unit_tests" args)
+build-unit-tests *args: (build "--target" "hashmap_unit_tests" "db_unit_tests" args)
 
 # Run CTest suite using preset and -C flag for config
 test-unit-tests *args: (build-unit-tests args)

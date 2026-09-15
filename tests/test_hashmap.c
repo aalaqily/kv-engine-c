@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #define RUN_TEST(test_func)                                     \
     do {                                                        \
         tests_count++;                                          \
@@ -119,7 +118,7 @@ static void test_remove(void) {
 static size_t tests_count = 0;
 
 int main(void) {
-    printf("=== RUNNING HashMap unit tests ===\n");
+    printf("=== Running HashMap Unit Tests ===\n");
 
     RUN_TEST(test_create_destroy);
     RUN_TEST(test_resize_to);
@@ -128,6 +127,6 @@ int main(void) {
     RUN_TEST(test_collisions);
     RUN_TEST(test_remove);
 
-    printf("=== ALL TESTS PASSED ===\n");
+    printf("=== All HashMap Unit Tests Passed ===\n");
     return 0;
 }
