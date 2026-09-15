@@ -19,20 +19,21 @@ configure *args: _clean_hook
     cmake --preset {{preset}} --config {{config}} {{verbose_flag}} {{args}}
 
 # Build project
-build config=config *args: _clean_hook
+build *args: _clean_hook
     cmake --build --preset {{preset}} --config {{config}} {{verbose_flag}} {{args}}
 
 # Build project with Release config
-build-release *args: (build "Release" args)
+build-release *args:
+    config="Release" just build {{args}}
 
 # Build unit tests executable
-build-unit-tests config=config *args: (build config "--target" "unit_tests" args)
+build-unit-tests *args: (build "--target" "unit_tests" args)
 
 # Run CTest suite using preset and -C flag for config
-test-unit-tests config=config *args: (build-unit-tests config args)
+test-unit-tests *args: (build-unit-tests args)
     ctest --preset {{preset}} -C {{config}} {{verbose_flag}} {{args}}
 
-test-valgrind config=config *args: (build-unit-tests config)
-    valgrind {{args}} build/{{preset}}/{{config}}/unit_tests
+test-valgrind *args: (build-unit-tests)
+    valgrind --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 {{args}} build/{{preset}}/{{config}}/unit_tests
 
-test *args: (test-unit-tests config args) (test-valgrind config)
+test unit_tests_args="" valgrind_args="": (test-unit-tests unit_tests_args) (test-valgrind valgrind_args)
