@@ -24,7 +24,7 @@ build *args: _clean_hook
 
 # Build project with Release config
 build-release *args:
-    config="Release" just build {{args}}
+    just config="Release" build {{args}}
 
 # Build unit tests executable
 build-unit-tests *args: (build "--target" "unit_tests" args)
