@@ -4,12 +4,12 @@
 #include <string.h>
 
 
-#define RUN_TEST(test_func) \
-    do { \
-        tests_count++; \
-        printf("[%d] Running %s...", tests_count, #test_func); \
-        test_func(); \
-        printf(" PASSED\n"); \
+#define RUN_TEST(test_func)                                     \
+    do {                                                        \
+        tests_count++;                                          \
+        printf("[%d] Running %s...", tests_count, #test_func);  \
+        test_func();                                            \
+        printf(" PASSED\n");                                    \
     } while(0)
 
 static void test_create_destroy(void) {
