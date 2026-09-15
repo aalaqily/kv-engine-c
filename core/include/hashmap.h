@@ -1,12 +1,12 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef struct HashNode {
     char *key;
-    void *value;
+    char *value;
     struct HashNode *next;
 } HashNode;
 
@@ -16,7 +16,6 @@ typedef struct HashMap {
     size_t size;
 } HashMap;
 
-
 /* Container Functions */
 
 HashMap *hashmap_create(size_t initial_capacity);
@@ -25,8 +24,8 @@ bool hashmap_resize_to(HashMap *map, size_t new_capacity);
 
 /* Element Functions  */
 
-bool hashmap_put(HashMap *map, const char *key, void *value);
-void *hashmap_get(const HashMap *map, const char *key);
+bool hashmap_put(HashMap *map, const char *key, const char *value);
+char *hashmap_get(const HashMap *map, const char *key);
 bool hashmap_remove(HashMap *map, const char *key);
 bool hashmap_contains(const HashMap *map, const char *key);
 

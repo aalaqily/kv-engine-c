@@ -4,6 +4,7 @@ project(kv-engine VERSION 0.0.0 LANGUAGES C)
 # Force standard C11
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
+set(CMAKE_C_EXTENSIONS OFF)
 
 # Fetch External dependency (xxHash)
 include(FetchContent)
@@ -14,55 +15,66 @@ FetchContent_Declare(
     GIT_TAG v0.8.2
 )
 
-# Download and make xxHash available as a cmake target
 FetchContent_MakeAvailable(xxhash)
 
-# Core library target
-add_library(kv-engine-core
-    src/hashmap.c
-    src/db.c
+# Apply warning flags to a target
+function(kv_engine_enable_warnings target)
+    target_compile_options(${target} PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Werror
+    )
+endfunction()
+
+# Core library: hashmap + persistence. Internal to the engine; not exposed publicly.
+add_library(kv_engine_core
+    core/src/hashmap.c
+    core/src/db.c
 )
+add_library(kv_engine::core ALIAS kv_engine_core)
 
-# Alias target for cleaner internal consumption
-add_library(kv-engine::core ALIAS kv-engine-core)
-
-# Include directories
-# BUILD_INTERFACE allows internal source files to find include/hashmap.h
-# INSTALL_INTERFACE makes header paths work cleanly when installed
-target_include_directories(kv-engine-core PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+target_include_directories(kv_engine_core PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/core/include>
     $<INSTALL_INTERFACE:include>
 )
+target_link_libraries(kv_engine_core PRIVATE xxhash)
+kv_engine_enable_warnings(kv_engine_core)
 
-# Link xxHash to kv-engine-core
-# xxHash exports the target `xxhash::xxhash`
-target_link_libraries(kv-engine-core PRIVATE xxhash)
-
-# Compiler warning options
-target_compile_options(kv-engine-core PRIVATE
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Werror
+# Public API layer: opaque KVEngine over the core. Core stays private to consumers.
+add_library(kv_engine_api
+    api/src/kv_engine.c
 )
+add_library(kv_engine::api ALIAS kv_engine_api)
+
+target_include_directories(kv_engine_api PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/api/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(kv_engine_api PRIVATE kv_engine::core)
+kv_engine_enable_warnings(kv_engine_api)
+
+# Application executable
+add_executable(kv_engine_app
+    app/src/main.c
+)
+target_link_libraries(kv_engine_app PRIVATE kv_engine::api)
+kv_engine_enable_warnings(kv_engine_app)
 
 # Enable testing
 enable_testing()
 
-# Add test executable target
-add_executable(hashmap_unit_tests tests/test_hashmap.c)
+# Function to set up a unit test executable with asserts kept active (Release
+# defines NDEBUG, which would otherwise compile out every assert).
+function(kv_engine_add_unit_test name source)
+    add_executable(${name} ${source})
+    target_link_libraries(${name} PRIVATE kv_engine::core)
+    target_compile_options(${name} PRIVATE
+        $<$<C_COMPILER_ID:GNU,Clang,AppleClang>:-UNDEBUG>
+    )
+    kv_engine_enable_warnings(${name})
+    add_test(NAME ${name} COMMAND ${name})
+endfunction()
 
-# Link library target (kv-engine-core) and xxHash
-target_link_libraries(hashmap_unit_tests PRIVATE kv-engine::core)
-
-# Register exectuable with CTest driver
-add_test(NAME HashMapUnitTests COMMAND hashmap_unit_tests)
-
-# Add test executable target
-add_executable(db_unit_tests tests/test_db.c)
-
-# Link library target (kv-engine-core) and xxHash
-target_link_libraries(db_unit_tests PRIVATE kv-engine::core)
-
-# Register exectuable with CTest driver
-add_test(NAME DBUnitTests COMMAND db_unit_tests)
+kv_engine_add_unit_test(hashmap_unit_tests core/unit_tests/test_hashmap.c)
+kv_engine_add_unit_test(db_unit_tests core/unit_tests/test_db.c)

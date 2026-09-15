@@ -1,15 +1,7 @@
 #include "hashmap.h"
+#include "tests.h"
 #include <assert.h>
-#include <stdio.h>
 #include <string.h>
-
-#define RUN_TEST(test_func)                                     \
-    do {                                                        \
-        tests_count++;                                          \
-        printf("[%d] Running %s...", tests_count, #test_func);  \
-        test_func();                                            \
-        printf(" PASSED\n");                                    \
-    } while(0)
 
 static void test_create_destroy(void) {
 
@@ -54,10 +46,10 @@ static void test_put_and_get(void) {
 static void test_dynamic_resize() {
     HashMap *map = hashmap_create(4);
 
-    hashmap_put(map, "key1", (void *) 1);
-    hashmap_put(map, "key2", (void *) 2);
-    hashmap_put(map, "key3", (void *) 3);
-    hashmap_put(map, "key4", (void *) 4);
+    hashmap_put(map, "key1", "value1");
+    hashmap_put(map, "key2", "value2");
+    hashmap_put(map, "key3", "value3");
+    hashmap_put(map, "key4", "value4");
 
     assert(hashmap_capacity(map) == 8);
 
@@ -68,15 +60,15 @@ static void test_collisions(void) {
 
     HashMap *map = hashmap_create(2);
 
-    hashmap_put(map, "key1", (void *) 1);
-    hashmap_put(map, "key2", (void *) 2);
-    hashmap_put(map, "key3", (void *) 3);
-    hashmap_put(map, "key4", (void *) 4);
+    hashmap_put(map, "key1", "value1");
+    hashmap_put(map, "key2", "value2");
+    hashmap_put(map, "key3", "value3");
+    hashmap_put(map, "key4", "value4");
 
-    assert(hashmap_get(map, "key1") == (void *) 1);
-    assert(hashmap_get(map, "key2") == (void *) 2);
-    assert(hashmap_get(map, "key3") == (void *) 3);
-    assert(hashmap_get(map, "key4") == (void *) 4);
+    assert(strcmp(hashmap_get(map, "key1"), "value1") == 0);
+    assert(strcmp(hashmap_get(map, "key2"), "value2") == 0);
+    assert(strcmp(hashmap_get(map, "key3"), "value3") == 0);
+    assert(strcmp(hashmap_get(map, "key4"), "value4") == 0);
 
     assert(hashmap_contains(map, "key1"));
     assert(hashmap_contains(map, "key2"));
@@ -91,9 +83,9 @@ static void test_collisions(void) {
 static void test_remove(void) {
 
     HashMap *map = hashmap_create(16);
-    hashmap_put(map, "key1", (void *) 1);
-    hashmap_put(map, "key2", (void *) 2);
-    hashmap_put(map, "key3", (void *) 3);
+    hashmap_put(map, "key1", "value1");
+    hashmap_put(map, "key2", "value2");
+    hashmap_put(map, "key3", "value3");
 
     bool key2_removed = hashmap_remove(map, "key2");
     bool key1_removed = hashmap_remove(map, "key1");
@@ -114,8 +106,6 @@ static void test_remove(void) {
 
     hashmap_destroy(map);
 }
-
-static size_t tests_count = 0;
 
 int main(void) {
     printf("=== Running HashMap Unit Tests ===\n");

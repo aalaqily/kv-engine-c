@@ -1,16 +1,9 @@
 #include "db.h"
 #include "hashmap.h"
+#include "tests.h"
 #include <assert.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
-#define RUN_TEST(test_func)                                     \
-    do {                                                        \
-        tests_count++;                                          \
-        printf("[%d] Running %s...", tests_count, #test_func);  \
-        test_func();                                            \
-        printf(" PASSED\n");                                    \
-    } while(0)
 
 #define TEST_DB_FILE "test_kv.db"
 #define CORRUPT_DB_FILE "corrupt_kv.db"
@@ -18,7 +11,7 @@
 static void test_save_and_load() {
     HashMap *map = hashmap_create(16);
     assert(map != NULL);
-    
+
     assert(hashmap_put(map, "firstname", "Gottfried"));
     assert(hashmap_put(map, "middlename", "Wilhelm"));
     assert(hashmap_put(map, "lastname", "Leibniz"));
@@ -30,9 +23,9 @@ static void test_save_and_load() {
     assert(loaded_map != NULL);
     assert(db_load(loaded_map, TEST_DB_FILE));
 
-    assert(strcmp((const char *) hashmap_get(loaded_map, "firstname"), "Gottfried") == 0);
-    assert(strcmp((const char *) hashmap_get(loaded_map, "middlename"), "Wilhelm") == 0);
-    assert(strcmp((const char *) hashmap_get(loaded_map, "lastname"), "Leibniz") == 0);
+    assert(strcmp((const char *)hashmap_get(loaded_map, "firstname"), "Gottfried") == 0);
+    assert(strcmp((const char *)hashmap_get(loaded_map, "middlename"), "Wilhelm") == 0);
+    assert(strcmp((const char *)hashmap_get(loaded_map, "lastname"), "Leibniz") == 0);
 
     hashmap_destroy(map);
     hashmap_destroy(loaded_map);
@@ -54,11 +47,7 @@ static void test_load_invalid_magic_bytes(void) {
     assert(fp != NULL);
 
     DBHeader bad_header = {
-        .magic = {'F', 'A', 'I', 'L'},
-        .version = KV_VERSION,
-        .reserved = 0,
-        .record_count = 0
-    };
+        .magic = {'F', 'A', 'I', 'L'}, .version = KV_VERSION, .reserved = 0, .record_count = 0};
     fwrite(&bad_header, sizeof(DBHeader), 1, fp);
     fclose(fp);
 
@@ -89,8 +78,6 @@ static void test_load_truncated_file(void) {
     hashmap_destroy(map);
     remove(CORRUPT_DB_FILE);
 }
-
-static size_t tests_count = 0;
 
 int main(void) {
     printf("=== Running DB Unit Tests ===\n");

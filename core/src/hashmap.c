@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include "hashmap.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +12,7 @@
 // Internal helper using xxHash (64-bit hash)
 static size_t helper_hash(const char *key) {
     // XXH64(data, length, seed)
-    return (size_t) XXH64(key, strlen(key), 0);
+    return (size_t)XXH64(key, strlen(key), 0);
 }
 
 /* Container Functions */
@@ -22,7 +24,7 @@ HashMap *hashmap_create(size_t initial_capacity) {
 
     HashMap *map = malloc(sizeof(HashMap));
 
-    if (!map) 
+    if (!map)
         return NULL;
 
     map->capacity = initial_capacity;
@@ -46,6 +48,7 @@ void hashmap_destroy(HashMap *map) {
         while (current != NULL) {
             HashNode *next = current->next;
             free(current->key);
+            free(current->value);
             free(current);
             current = next;
         }
@@ -62,7 +65,6 @@ bool hashmap_resize_to(HashMap *map, size_t new_capacity) {
     HashNode **new_buckets = calloc(new_capacity, sizeof(HashNode *));
     if (!new_buckets)
         return false;
-
 
     for (size_t i = 0; i < hashmap_capacity(map); i++) {
         HashNode *current = map->buckets[i];
@@ -88,7 +90,7 @@ bool hashmap_resize_to(HashMap *map, size_t new_capacity) {
 
 #define RESIZE_FACTOR 2
 
-bool hashmap_put(HashMap *map, const char *key, void *value) {
+bool hashmap_put(HashMap *map, const char *key, const char *value) {
     if (!(map && key))
         return false;
 
@@ -101,32 +103,36 @@ bool hashmap_put(HashMap *map, const char *key, void *value) {
     HashNode *current = map->buckets[index];
     while (current != NULL) {
         if (strcmp(current->key, key) == 0) {
-            current->value = value;
+            char *new_value = strdup(value);
+            if (!new_value)
+                return false;
+            free(current->value);
+            current->value = new_value;
             return true;
         }
         current = current->next;
-    } 
+    }
 
     HashNode *node = malloc(sizeof(HashNode));
     if (!node)
         return false;
-    
+
     node->key = strdup(key);
     if (!node->key) {
         free(node);
         return false;
     }
 
-    node->value = value;
+    node->value = strdup(value);
 
     node->next = map->buckets[index];
     map->buckets[index] = node;
-    
+
     map->size++;
     return true;
 }
 
-void *hashmap_get(const HashMap *map, const char *key) {
+char *hashmap_get(const HashMap *map, const char *key) {
     if (!(map && key))
         return NULL;
 
@@ -134,7 +140,7 @@ void *hashmap_get(const HashMap *map, const char *key) {
 
     HashNode *current = map->buckets[index];
     while (current != NULL) {
-        if(strcmp(current->key, key) == 0) {
+        if (strcmp(current->key, key) == 0) {
             return current->value;
         }
         current = current->next;
@@ -144,7 +150,7 @@ void *hashmap_get(const HashMap *map, const char *key) {
 }
 
 bool hashmap_remove(HashMap *map, const char *key) {
-    if(!(map && key))
+    if (!(map && key))
         return false;
 
     size_t index = helper_hash(key) % map->capacity;
@@ -152,7 +158,7 @@ bool hashmap_remove(HashMap *map, const char *key) {
     HashNode *current = map->buckets[index];
     HashNode *prev = NULL;
     while (current != NULL) {
-        if(strcmp(current->key, key) == 0) {
+        if (strcmp(current->key, key) == 0) {
             if (prev == NULL) {
                 // Remove node from the head of the hashmap
                 map->buckets[index] = current->next;
@@ -162,6 +168,7 @@ bool hashmap_remove(HashMap *map, const char *key) {
             }
 
             free(current->key);
+            free(current->value);
             free(current);
 
             map->size--;
@@ -177,14 +184,14 @@ bool hashmap_remove(HashMap *map, const char *key) {
 }
 
 bool hashmap_contains(const HashMap *map, const char *key) {
-    if(!(map && key))
+    if (!(map && key))
         return false;
 
     size_t index = helper_hash(key) % map->capacity;
 
     HashNode *current = map->buckets[index];
-    while(current != NULL) {
-        if(strcmp(current->key, key) == 0)
+    while (current != NULL) {
+        if (strcmp(current->key, key) == 0)
             return true;
         current = current->next;
     }
