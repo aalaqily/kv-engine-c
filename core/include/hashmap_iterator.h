@@ -1,19 +1,19 @@
 #ifndef HASHMAP_ITER_H
 #define HASHMAP_ITER_H
 
+#include "hashmap.h"
 #include <stdbool.h>
 #include <stddef.h>
-#include "hashmap.h"
 
 /*
     Modifying a HashMap while a HashMapIterator is active is undefined behavior.
-    A HashMapIterator MUST BE recereated after any write. 
+    A HashMapIterator MUST BE recereated after any write.
 */
 
 typedef struct HashMapIterator {
     HashMap *map;
     size_t bucket_index;
-    HashNode* current;
+    HashNode *current;
 } HashMapIterator;
 
 /* Iterator Functions */
