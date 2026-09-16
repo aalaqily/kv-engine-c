@@ -74,6 +74,19 @@ kv_engine_enable_warnings(kv_engine_app)
 # Enable testing
 enable_testing()
 
+find_program(VALGRIND_BIN valgrind REQUIRED)
+
+# Set Valgrind as the memory checker for CTest
+set(MEMORYCHECK_COMMAND "${VALGRIND_BIN}")
+
+# Customize Valgrind flags
+set(MEMORYCHECK_COMMAND_OPTIONS
+    "--leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1"
+)
+
+# Include CTest module to generate CTestCustom.cmake / DartConfiguration.tcl
+include(CTest)
+
 # Function to set up a unit test executable with asserts kept active (Release
 # defines NDEBUG, which would otherwise compile out every assert).
 function(kv_engine_add_unit_test name source)

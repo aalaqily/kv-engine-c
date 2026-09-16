@@ -3,58 +3,51 @@ default: workflow
 preset := "ninja-multi"
 config := "Debug"
 clean := "0"
+
 verbose := "0"
-cmake_args := ""
-ctest_args := ""
-valgrind_args := ""
-
-all_args := "preset='" + preset + "' config='" + config + "' clean='" + clean + "' verbose='" + verbose + "' cmake_args='" + cmake_args + "' ctest_args='" + ctest_args + "' valgrind_args='" + valgrind_args + "'"
-
 verbose_flag := if verbose == "1" { "--verbose" } else { "" }
+
+memcheck := "0"
+memcheck_command := if memcheck == "1" {"valgrind"} else { "" }
+memcheck_args := "--leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1"
+memcheck_ctest_flag := if memcheck == "1" {"-T memcheck"} else { "" }
 
 unit_tests := "hashmap_unit_tests hashmap_iterator_unit_tests db_unit_tests"
 
 # Remove the build directory
-clean_build:
+clean-build:
     rm -rf build/
 
-_clean_hook:
-    @if [ "{{clean}}" = "1" ]; then just clean_build; fi
+_clean-hook:
+    @if [ "{{clean}}" = "1" ]; then just clean-build; fi
 
 # Configure, build and test via the CMake workflow preset
-workflow: _clean_hook
-    cmake --workflow --preset {{preset}} {{cmake_args}}
+workflow *args: _clean-hook
+    cmake --workflow --preset {{preset}} {{args}}
 
 # Configure project
-configure: _clean_hook
-    cmake --preset {{preset}} {{cmake_args}}
+configure *args: _clean-hook
+    cmake --preset {{preset}} {{args}}
 
 # Build project
-build: _clean_hook
-    cmake --build --preset {{preset}} --config {{config}} {{verbose_flag}} {{cmake_args}}
+build *args: _clean-hook
+    cmake --build --preset {{preset}} --config {{config}} {{verbose_flag}} {{args}}
 
 # Build project with Release config
 build-release:
-    just {{all_args}} config="Release" build
+    just config="Release" build
 
 # Build unit tests executables
-build-unit-tests:
-    just {{all_args}} cmake_args="--target {{unit_tests}}" build
+build-tests: (build "--target" unit_tests)
 
 # Build and run the kv_engine_app executable
-run *args:
-    just {{all_args}} cmake_args="--target kv_engine_app" build
-    ./build/{{preset}}/{{config}}/kv-engine {{args}}
+run *args: (build "--target" "kv_engine_app")
+    {{memcheck_command}} {{memcheck_args}} ./build/{{preset}}/{{config}}/kv-engine {{args}}
 
-# Run CTest suite using preset and -C flag for config
-test-unit-tests: build-unit-tests
-    ctest --preset {{preset}} -C {{config}} {{verbose_flag}} {{ctest_args}}
-
-test-valgrind: build-unit-tests
-    for t in {{unit_tests}}; do valgrind --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 {{valgrind_args}} build/{{preset}}/{{config}}/${t} ; done
-
-# Unit tests + leak checking
-test: test-unit-tests test-valgrind
+# Run unit tests, with Valgrind memcheck when valgrind=1
+test *args: build-tests
+    ctest --test-dir build/{{preset}} -C {{config}} {{verbose_flag}} {{memcheck_ctest_flag}} {{args}}
+    if [ {{memcheck}} == 1 ]; then bat -P build/ninja-multi/Testing/Temporary/MemoryChecker.*.log; fi
 
 # Format all source files in place with clang-format
 format:
