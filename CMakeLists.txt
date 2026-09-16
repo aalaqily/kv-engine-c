@@ -30,6 +30,7 @@ endfunction()
 # Core library: hashmap + persistence. Internal to the engine; not exposed publicly.
 add_library(kv_engine_core
     core/src/hashmap.c
+    core/src/hashmap_iterator.c
     core/src/db.c
 )
 add_library(kv_engine::core ALIAS kv_engine_core)
@@ -77,4 +78,5 @@ function(kv_engine_add_unit_test name source)
 endfunction()
 
 kv_engine_add_unit_test(hashmap_unit_tests core/unit_tests/test_hashmap.c)
+kv_engine_add_unit_test(hashmap_iterator_unit_tests core/unit_tests/test_hashmap_iterator.c)
 kv_engine_add_unit_test(db_unit_tests core/unit_tests/test_db.c)

@@ -12,6 +12,8 @@ all_args := "preset='" + preset + "' config='" + config + "' clean='" + clean + 
 
 verbose_flag := if verbose == "1" { "--verbose" } else { "" }
 
+unit_tests := "hashmap_unit_tests hashmap_iterator_unit_tests db_unit_tests"
+
 # Remove the build directory
 clean_build:
     rm -rf build/
@@ -37,7 +39,7 @@ build-release:
 
 # Build unit tests executables
 build-unit-tests:
-    just {{all_args}} cmake_args="--target hashmap_unit_tests db_unit_tests" build
+    just {{all_args}} cmake_args="--target {{unit_tests}}" build
 
 # Build and run the kv_engine_app executable
 run:
@@ -49,8 +51,7 @@ test-unit-tests: build-unit-tests
     ctest --preset {{preset}} -C {{config}} {{verbose_flag}} {{ctest_args}}
 
 test-valgrind: build-unit-tests
-    valgrind --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 {{valgrind_args}} build/{{preset}}/{{config}}/hashmap_unit_tests
-    valgrind --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 {{valgrind_args}} build/{{preset}}/{{config}}/db_unit_tests
+    for t in {{unit_tests}}; do valgrind --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 {{valgrind_args}} build/{{preset}}/{{config}}/${t} ; done
 
 # Unit tests + leak checking
 test: test-unit-tests test-valgrind
