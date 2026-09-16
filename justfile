@@ -42,9 +42,9 @@ build-unit-tests:
     just {{all_args}} cmake_args="--target {{unit_tests}}" build
 
 # Build and run the kv_engine_app executable
-run:
+run *args:
     just {{all_args}} cmake_args="--target kv_engine_app" build
-    ./build/{{preset}}/{{config}}/kv_engine_app
+    ./build/{{preset}}/{{config}}/kv-engine {{args}}
 
 # Run CTest suite using preset and -C flag for config
 test-unit-tests: build-unit-tests

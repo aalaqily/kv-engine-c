@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.5)
 project(kv-engine VERSION 0.0.0 LANGUAGES C)
 
 # Force standard C11
@@ -16,6 +16,14 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(xxhash)
+
+FetchContent_Declare(
+    argparse
+    GIT_REPOSITORY https://github.com/cofyc/argparse.git
+    GIT_TAG 4e30aba50340af7f2d3932492c4bffdef7669db8
+)
+
+FetchContent_MakeAvailable(argparse)
 
 # Apply warning flags to a target
 function(kv_engine_enable_warnings target)
@@ -59,7 +67,8 @@ kv_engine_enable_warnings(kv_engine_api)
 add_executable(kv_engine_app
     app/src/main.c
 )
-target_link_libraries(kv_engine_app PRIVATE kv_engine::api)
+set_target_properties(kv_engine_app PROPERTIES OUTPUT_NAME "kv-engine")
+target_link_libraries(kv_engine_app PRIVATE kv_engine::api argparse_static)
 kv_engine_enable_warnings(kv_engine_app)
 
 # Enable testing
