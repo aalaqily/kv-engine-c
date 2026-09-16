@@ -5,6 +5,11 @@
 #include <stddef.h>
 #include "hashmap.h"
 
+/*
+    Modifying a HashMap while a HashMapIterator is active is undefined behavior.
+    A HashMapIterator MUST BE recereated after any write. 
+*/
+
 typedef struct HashMapIterator {
     HashMap *map;
     size_t bucket_index;
@@ -19,12 +24,7 @@ void hashmap_iterator_destroy(HashMapIterator *iter);
 /* Element Functions  */
 
 bool hashmap_iterator_next(HashMapIterator *iter);
-const char *hashmap_iterator_get_key(const HashMapIterator *iter);
-const char *hashmap_iterator_get_value(const HashMapIterator *iter);
-
-
-/* Metadata Functions  */
-
-size_t hashmap_iterator_current_index(const HashMapIterator *iter);
+const char *hashmap_iterator_current_key(const HashMapIterator *iter);
+const char *hashmap_iterator_current_value(const HashMapIterator *iter);
 
 #endif // HASHMAP_ITER_H

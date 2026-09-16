@@ -6,12 +6,17 @@
 
 static size_t tests_count = 0;
 
-#define RUN_TEST(test_func)                                                    \
-    do {                                                                       \
-        tests_count++;                                                         \
-        printf("[%zu] Running %s...", tests_count, #test_func);                \
-        test_func();                                                           \
-        printf(" PASSED\n");                                                   \
+#define BLUE_TEXT "\033[34m"
+#define GREEN_TEXT "\033[32m"
+#define NORMAL_TEXT "\033[0m"
+
+
+#define RUN_TEST(test_func)                                                                   \
+    do {                                                                                      \
+        tests_count++;                                                                        \
+        printf("[%zu] %s %sRunning...%s\n", tests_count, #test_func, BLUE_TEXT, NORMAL_TEXT); \
+        test_func();                                                                          \
+        printf("[%zu] %s %sPassed%s\n", tests_count, #test_func, GREEN_TEXT, NORMAL_TEXT);    \
     } while (0)
 
 #endif // KV_TESTS_H

@@ -8,9 +8,13 @@ HashMapIterator *hashmap_iterator_create(HashMap *map) {
         return NULL;
 
     HashMapIterator *iter = malloc(sizeof(HashMapIterator));
+
+    if(!iter)
+        return NULL;
+
     iter->map = map;
     iter->bucket_index = 0;
-    iter->current = iter->map->buckets[iter->bucket_index];
+    iter->current = NULL;
 
     return iter;
 }
@@ -30,36 +34,32 @@ bool hashmap_iterator_next(HashMapIterator *iter) {
     }
 
     while(!iter->current) {
-        if(iter->bucket_index == hashmap_capacity(iter->map) - 1)
+        if(iter->bucket_index == hashmap_capacity(iter->map))
             return false;
         
         iter->bucket_index++;
-        iter->current = iter->map->buckets[iter->bucket_index];
+        iter->current = iter->map->buckets[iter->bucket_index - 1];
     }
 
     return true;
 }
 
-const char *hashmap_iterator_get_key(const HashMapIterator *iter) {
+const char *hashmap_iterator_current_key(const HashMapIterator *iter) {
     if(!iter)
+        return NULL;
+
+    if(!iter->current)
         return NULL;
 
     return iter->current->key;
 }
 
-const char *hashmap_iterator_get_value(const HashMapIterator *iter) {
+const char *hashmap_iterator_current_value(const HashMapIterator *iter) {
     if(!iter)
         return NULL;
 
+    if(!iter->current)
+        return NULL;
+
     return iter->current->value;
-}
-
-
-/* Metadata Functions  */
-
-size_t hashmap_iterator_current_index(const HashMapIterator *iter) {
-    if (!iter)
-        return 0;
-    
-    return iter->bucket_index;
 }
