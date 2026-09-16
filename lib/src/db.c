@@ -1,10 +1,9 @@
-#include "db.h"
-#include "hashmap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "kv_engine.h"
 
-bool db_save(const HashMap *map, const char *filepath) {
+bool kve_map_save(const KVEHashMap *map, const char *filepath) {
     if (!(map && filepath))
         return false;
 
@@ -12,21 +11,21 @@ bool db_save(const HashMap *map, const char *filepath) {
     if (!fp)
         return false;
 
-    DBHeader db_header = {
-        .version = KV_VERSION,
+    KVEDBHeader db_header = {
+        .version = KVE_VERSION,
         .reserved = 0,
-        .record_count = hashmap_size(map),
+        .record_count = kve_map_size(map),
     };
 
-    memcpy(db_header.magic, KV_MAGIC, 4);
+    memcpy(db_header.magic, KVE_MAGIC, 4);
 
-    if (fwrite(&db_header, sizeof(DBHeader), 1, fp) != 1) {
+    if (fwrite(&db_header, sizeof(KVEDBHeader), 1, fp) != 1) {
         fclose(fp);
         return false;
     }
 
-    for (size_t i = 0; i < hashmap_capacity(map); i++) {
-        HashNode *current = map->buckets[i];
+    for (size_t i = 0; i < kve_map_capacity(map); i++) {
+        KVEHashNode *current = map->buckets[i];
         while (current != NULL) {
             size_t key_len = strlen(current->key);
             size_t val_len = strlen((const char *)current->value);
@@ -36,12 +35,12 @@ bool db_save(const HashMap *map, const char *filepath) {
                 return false;
             }
 
-            RecordHeader rec_header = {
+            KVERecordHeader rec_header = {
                 .key_len = (uint16_t)key_len,
                 .val_len = (uint32_t)val_len,
             };
 
-            if (fwrite(&rec_header, sizeof(RecordHeader), 1, fp) != 1) {
+            if (fwrite(&rec_header, sizeof(KVERecordHeader), 1, fp) != 1) {
                 fclose(fp);
                 return false;
             }
@@ -64,7 +63,7 @@ bool db_save(const HashMap *map, const char *filepath) {
     return true;
 }
 
-bool db_load(HashMap *map, const char *filepath) {
+bool kve_map_load(KVEHashMap *map, const char *filepath) {
     if (!(map && filepath))
         return false;
 
@@ -72,20 +71,20 @@ bool db_load(HashMap *map, const char *filepath) {
     if (!fp)
         return false;
 
-    DBHeader db_header;
-    if (fread(&db_header, sizeof(DBHeader), 1, fp) != 1) {
+    KVEDBHeader db_header;
+    if (fread(&db_header, sizeof(KVEDBHeader), 1, fp) != 1) {
         fclose(fp);
         return false;
     }
 
-    if (memcmp(db_header.magic, KV_MAGIC, 4) != 0 || db_header.version != KV_VERSION) {
+    if (memcmp(db_header.magic, KVE_MAGIC, 4) != 0 || db_header.version != KVE_VERSION) {
         fclose(fp);
         return false;
     }
 
     for (uint64_t i = 0; i < db_header.record_count; i++) {
-        RecordHeader rec_header;
-        if (fread(&rec_header, sizeof(RecordHeader), 1, fp) != 1) {
+        KVERecordHeader rec_header;
+        if (fread(&rec_header, sizeof(KVERecordHeader), 1, fp) != 1) {
             fclose(fp);
             return false;
         }
@@ -111,7 +110,7 @@ bool db_load(HashMap *map, const char *filepath) {
         key_buf[rec_header.key_len] = '\0';
         val_buf[rec_header.val_len] = '\0';
 
-        if (!hashmap_put(map, key_buf, val_buf)) {
+        if (!kve_map_put(map, key_buf, val_buf)) {
             free(key_buf);
             free(val_buf);
             fclose(fp);

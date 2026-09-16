@@ -1,13 +1,10 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "hashmap.h"
+#include "kv_engine.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <xxhash.h>
-
-#define DEFAULT_CAPACITY 16
-#define LOAD_FACTOR_THRESHOLD 0.75f
 
 // Internal helper using xxHash (64-bit hash)
 static size_t helper_hash(const char *key) {
@@ -15,21 +12,21 @@ static size_t helper_hash(const char *key) {
     return (size_t)XXH64(key, strlen(key), 0);
 }
 
-/* Container Functions */
+/* == KVEHashMap Container Functions == */
 
-HashMap *hashmap_create(size_t initial_capacity) {
+KVEHashMap *kve_map_create(size_t initial_capacity) {
     if (initial_capacity == 0) {
-        initial_capacity = DEFAULT_CAPACITY;
+        initial_capacity = KVE_DEFAULT_CAPACITY;
     }
 
-    HashMap *map = malloc(sizeof(HashMap));
+    KVEHashMap *map = malloc(sizeof(KVEHashMap));
 
     if (!map)
         return NULL;
 
     map->capacity = initial_capacity;
     map->size = 0;
-    map->buckets = calloc(map->capacity, sizeof(HashNode *));
+    map->buckets = calloc(map->capacity, sizeof(KVEHashNode *));
 
     if (!map->buckets) {
         free(map);
@@ -39,14 +36,14 @@ HashMap *hashmap_create(size_t initial_capacity) {
     return map;
 }
 
-void hashmap_destroy(HashMap *map) {
+void kve_map_destroy(KVEHashMap *map) {
     if (!map)
         return;
 
     for (size_t i = 0; i < map->capacity; i++) {
-        HashNode *current = map->buckets[i];
+        KVEHashNode *current = map->buckets[i];
         while (current != NULL) {
-            HashNode *next = current->next;
+            KVEHashNode *next = current->next;
             free(current->key);
             free(current->value);
             free(current);
@@ -58,18 +55,18 @@ void hashmap_destroy(HashMap *map) {
     free(map);
 }
 
-bool hashmap_resize_to(HashMap *map, size_t new_capacity) {
+bool kve_map_resize_to(KVEHashMap *map, size_t new_capacity) {
     if (!(map && new_capacity > 0))
         return false;
 
-    HashNode **new_buckets = calloc(new_capacity, sizeof(HashNode *));
+    KVEHashNode **new_buckets = calloc(new_capacity, sizeof(KVEHashNode *));
     if (!new_buckets)
         return false;
 
-    for (size_t i = 0; i < hashmap_capacity(map); i++) {
-        HashNode *current = map->buckets[i];
+    for (size_t i = 0; i < kve_map_capacity(map); i++) {
+        KVEHashNode *current = map->buckets[i];
         while (current != NULL) {
-            HashNode *next = current->next;
+            KVEHashNode *next = current->next;
 
             size_t new_index = helper_hash(current->key) % new_capacity;
 
@@ -86,21 +83,19 @@ bool hashmap_resize_to(HashMap *map, size_t new_capacity) {
     return true;
 }
 
-/* Element Functions  */
+/* == KVEHashMap Element Functions == */
 
-#define RESIZE_FACTOR 2
-
-bool hashmap_put(HashMap *map, const char *key, const char *value) {
+bool kve_map_put(KVEHashMap *map, const char *key, const char *value) {
     if (!(map && key))
         return false;
 
-    if (hashmap_size(map) >= 0.75 * hashmap_capacity(map))
-        if (!hashmap_resize_to(map, hashmap_capacity(map) * RESIZE_FACTOR))
+    if (kve_map_size(map) >= KVE_LOAD_FACTOR_THRESHOLD * kve_map_capacity(map))
+        if (!kve_map_resize_to(map, kve_map_capacity(map) * KVE_RESIZE_FACTOR))
             return false;
 
     size_t index = helper_hash(key) % map->capacity;
 
-    HashNode *current = map->buckets[index];
+    KVEHashNode *current = map->buckets[index];
     while (current != NULL) {
         if (strcmp(current->key, key) == 0) {
             char *new_value = strdup(value);
@@ -113,7 +108,7 @@ bool hashmap_put(HashMap *map, const char *key, const char *value) {
         current = current->next;
     }
 
-    HashNode *node = malloc(sizeof(HashNode));
+    KVEHashNode *node = malloc(sizeof(KVEHashNode));
     if (!node)
         return false;
 
@@ -132,13 +127,13 @@ bool hashmap_put(HashMap *map, const char *key, const char *value) {
     return true;
 }
 
-char *hashmap_get(const HashMap *map, const char *key) {
+const char *kve_map_get(const KVEHashMap *map, const char *key) {
     if (!(map && key))
         return NULL;
 
     size_t index = helper_hash(key) % map->capacity;
 
-    HashNode *current = map->buckets[index];
+    KVEHashNode *current = map->buckets[index];
     while (current != NULL) {
         if (strcmp(current->key, key) == 0) {
             return current->value;
@@ -149,21 +144,21 @@ char *hashmap_get(const HashMap *map, const char *key) {
     return NULL;
 }
 
-bool hashmap_remove(HashMap *map, const char *key) {
+bool kve_map_remove(KVEHashMap *map, const char *key) {
     if (!(map && key))
         return false;
 
     size_t index = helper_hash(key) % map->capacity;
 
-    HashNode *current = map->buckets[index];
-    HashNode *prev = NULL;
+    KVEHashNode *current = map->buckets[index];
+    KVEHashNode *prev = NULL;
     while (current != NULL) {
         if (strcmp(current->key, key) == 0) {
             if (prev == NULL) {
-                // Remove node from the head of the hashmap
+                // Remove node from the head of the kve_map
                 map->buckets[index] = current->next;
             } else {
-                // Remove node from the middle or the end of the hashmap
+                // Remove node from the middle or the end of the kve_map
                 prev->next = current->next;
             }
 
@@ -183,13 +178,13 @@ bool hashmap_remove(HashMap *map, const char *key) {
     return false;
 }
 
-bool hashmap_contains(const HashMap *map, const char *key) {
+bool kve_map_contains(const KVEHashMap *map, const char *key) {
     if (!(map && key))
         return false;
 
     size_t index = helper_hash(key) % map->capacity;
 
-    HashNode *current = map->buckets[index];
+    KVEHashNode *current = map->buckets[index];
     while (current != NULL) {
         if (strcmp(current->key, key) == 0)
             return true;
@@ -200,16 +195,16 @@ bool hashmap_contains(const HashMap *map, const char *key) {
     return false;
 }
 
-/* Metadata Functions  */
+/* == KVEHashMap Metadata Functions == */
 
-size_t hashmap_size(const HashMap *map) {
+size_t kve_map_size(const KVEHashMap *map) {
     if (!map)
         return 0;
 
     return map->size;
 }
 
-size_t hashmap_capacity(const HashMap *map) {
+size_t kve_map_capacity(const KVEHashMap *map) {
     if (!map)
         return 0;
 

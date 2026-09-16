@@ -1,8 +1,11 @@
 default: workflow
 
 preset := "ninja-multi"
-config := "Debug"
+target := "all"
 clean := "0"
+
+release := "0"
+config := if release == "1" {"Release"} else {"Debug"}
 
 verbose := "0"
 verbose_flag := if verbose == "1" { "--verbose" } else { "" }
@@ -11,8 +14,6 @@ memcheck := "0"
 memcheck_command := if memcheck == "1" {"valgrind"} else { "" }
 memcheck_args := if memcheck == "1" {"--leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1"} else {""}
 memcheck_ctest_flag := if memcheck == "1" {"-T memcheck"} else { "" }
-
-unit_tests := "hashmap_unit_tests hashmap_iterator_unit_tests db_unit_tests"
 
 # Remove the build directory
 clean-build:
@@ -31,11 +32,7 @@ configure *args: _clean-hook
 
 # Build project
 build *args: _clean-hook
-    cmake --build --preset {{preset}} --config {{config}} {{verbose_flag}} {{args}}
-
-# Build project with Release config
-build-release:
-    just config="Release" build
+    cmake --build --preset {{preset}} --config {{config}} --target {{target}} {{verbose_flag}} {{args}}
 
 # Build and run the kv_engine_app executable
 run *args: (build "--target" "kv_engine_app")

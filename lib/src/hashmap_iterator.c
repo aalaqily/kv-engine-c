@@ -1,13 +1,13 @@
-#include "hashmap_iterator.h"
 #include <stdlib.h>
+#include "kv_engine.h"
 
-/* Iterator Functions */
+/* == KVEIterator Container Functions == */
 
-HashMapIterator *hashmap_iterator_create(HashMap *map) {
+KVEIterator *kve_iter_create(KVEHashMap *map) {
     if (!map)
         return NULL;
 
-    HashMapIterator *iter = malloc(sizeof(HashMapIterator));
+    KVEIterator *iter = malloc(sizeof(KVEIterator));
 
     if (!iter)
         return NULL;
@@ -19,11 +19,13 @@ HashMapIterator *hashmap_iterator_create(HashMap *map) {
     return iter;
 }
 
-void hashmap_iterator_destroy(HashMapIterator *iter) { free(iter); }
+void kve_iter_destroy(KVEIterator *iter) {
+    free(iter);
+}
 
-/* Element Functions  */
+/* == KVEIterator Element Functions == */
 
-bool hashmap_iterator_next(HashMapIterator *iter) {
+bool kve_iter_next(KVEIterator *iter) {
     if (!iter)
         return false;
 
@@ -32,7 +34,7 @@ bool hashmap_iterator_next(HashMapIterator *iter) {
     }
 
     while (!iter->current) {
-        if (iter->bucket_index == hashmap_capacity(iter->map))
+        if (iter->bucket_index == kve_map_capacity(iter->map))
             return false;
 
         iter->bucket_index++;
@@ -42,7 +44,7 @@ bool hashmap_iterator_next(HashMapIterator *iter) {
     return true;
 }
 
-const char *hashmap_iterator_current_key(const HashMapIterator *iter) {
+const char *kve_iter_key(const KVEIterator *iter) {
     if (!iter)
         return NULL;
 
@@ -52,7 +54,7 @@ const char *hashmap_iterator_current_key(const HashMapIterator *iter) {
     return iter->current->key;
 }
 
-const char *hashmap_iterator_current_value(const HashMapIterator *iter) {
+const char *kve_iter_value(const KVEIterator *iter) {
     if (!iter)
         return NULL;
 

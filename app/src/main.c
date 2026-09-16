@@ -27,18 +27,18 @@ int cmd_put(int argc, const char **argv) {
     argparse_describe(&argparse, "\nPut key-value pair into the database", NULL);
     argc = argparse_parse(&argparse, argc, argv);
 
-    KVEngine *engine = kv_engine_create();
-    kv_engine_load(engine, file);
+    KVEHashMap *engine = kve_map_create(KVE_DEFAULT_CAPACITY);
+    kve_map_load(engine, file);
 
     const char *key = argv[0];
     const char *value = argv[1];
 
-    if(!kv_engine_put(engine, key, value))
+    if(!kve_map_put(engine, key, value))
         return 1;
-    if(!kv_engine_save(engine, file))
+    if(!kve_map_save(engine, file))
         return 1;
     
-    kv_engine_destroy(engine);
+    kve_map_destroy(engine);
     
     return 0;
 }
@@ -60,16 +60,16 @@ int cmd_get(int argc, const char **argv) {
     argparse_describe(&argparse, "\nGet value of key from the database", NULL);
     argc = argparse_parse(&argparse, argc, argv);
 
-    KVEngine *engine = kv_engine_create();
-    if(!kv_engine_load(engine, file))
+    KVEHashMap *engine = kve_map_create(KVE_DEFAULT_CAPACITY);
+    if(!kve_map_load(engine, file))
         return 1;
 
     const char *key = argv[0];
-    const char *value = kv_engine_get(engine, key);
+    const char *value = kve_map_get(engine, key);
 
     printf("%s:\t%s\n", key, value);
 
-    kv_engine_destroy(engine);
+    kve_map_destroy(engine);
 
     return 0;
 }
@@ -91,18 +91,18 @@ int cmd_rm(int argc, const char **argv) {
     argparse_describe(&argparse, "\nRemove key-value pair from the database", NULL);
     argc = argparse_parse(&argparse, argc, argv);
 
-    KVEngine *engine = kv_engine_create();
-    if(!kv_engine_load(engine, file))
+    KVEHashMap *engine = kve_map_create(KVE_DEFAULT_CAPACITY);
+    if(!kve_map_load(engine, file))
         return 1;
 
     const char *key = argv[0];
 
-    if(!kv_engine_remove(engine, key))
+    if(!kve_map_remove(engine, key))
         return 1;
-    if(!kv_engine_save(engine, file))
+    if(!kve_map_save(engine, file))
         return 1;
     
-    kv_engine_destroy(engine);
+    kve_map_destroy(engine);
 
     return 0;
 }
@@ -124,21 +124,21 @@ int cmd_show(int argc, const char **argv) {
     argparse_describe(&argparse, "\nShow all key-value pairs from the database", NULL);
     argc = argparse_parse(&argparse, argc, argv);
 
-    KVEngine *engine = kv_engine_create();
-    if(!kv_engine_load(engine, file))
+    KVEHashMap *engine = kve_map_create(KVE_DEFAULT_CAPACITY);
+    if(!kve_map_load(engine, file))
         return 1;
 
-    KVIterator *iter = kv_iter_create(engine);
+    KVEIterator *iter = kve_iter_create(engine);
     if(!iter) {
-        kv_engine_destroy(engine);
+        kve_map_destroy(engine);
         return 1;
     }
     
-    while(kv_iter_next(iter))
-        printf("%s:\t%s\n", kv_iter_current_key(iter), kv_iter_current_value(iter));
+    while(kve_iter_next(iter))
+        printf("%s:\t%s\n", kve_iter_key(iter), kve_iter_value(iter));
 
-    kv_engine_destroy(engine);
-    kv_iter_destroy(iter);
+    kve_map_destroy(engine);
+    kve_iter_destroy(iter);
 
     return 0;
 }
@@ -160,15 +160,15 @@ int cmd_contains(int argc, const char **argv) {
     argparse_describe(&argparse, "\nCheck if key is in the database", NULL);
     argc = argparse_parse(&argparse, argc, argv);
 
-    KVEngine *engine = kv_engine_create();
-    if(!kv_engine_load(engine, file))
+    KVEHashMap *engine = kve_map_create(KVE_DEFAULT_CAPACITY);
+    if(!kve_map_load(engine, file))
         return 1;
 
     const char *key = argv[0];
 
-    int result = kv_engine_contains(engine, key) ? 0 : 1;
+    int result = kve_map_contains(engine, key) ? 0 : 1;
 
-    kv_engine_destroy(engine);
+    kve_map_destroy(engine);
 
     return result;
 }

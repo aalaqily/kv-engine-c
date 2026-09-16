@@ -1,44 +1,43 @@
-#include "db.h"
-#include "hashmap.h"
-#include "tests.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tests.h"
+#include "kv_engine.h"
 
 #define TEST_DB_FILE "test_kv.db"
 #define CORRUPT_DB_FILE "corrupt_kv.db"
 
 static void test_save_and_load() {
-    HashMap *map = hashmap_create(16);
+    KVEHashMap *map = kve_map_create(16);
     assert(map != NULL);
 
-    assert(hashmap_put(map, "firstname", "Gottfried"));
-    assert(hashmap_put(map, "middlename", "Wilhelm"));
-    assert(hashmap_put(map, "lastname", "Leibniz"));
-    assert(hashmap_size(map) == 3);
+    assert(kve_map_put(map, "firstname", "Gottfried"));
+    assert(kve_map_put(map, "middlename", "Wilhelm"));
+    assert(kve_map_put(map, "lastname", "Leibniz"));
+    assert(kve_map_size(map) == 3);
 
-    assert(db_save(map, TEST_DB_FILE));
+    assert(kve_map_save(map, TEST_DB_FILE));
 
-    HashMap *loaded_map = hashmap_create(16);
+    KVEHashMap *loaded_map = kve_map_create(16);
     assert(loaded_map != NULL);
-    assert(db_load(loaded_map, TEST_DB_FILE));
+    assert(kve_map_load(loaded_map, TEST_DB_FILE));
 
-    assert(strcmp((const char *)hashmap_get(loaded_map, "firstname"), "Gottfried") == 0);
-    assert(strcmp((const char *)hashmap_get(loaded_map, "middlename"), "Wilhelm") == 0);
-    assert(strcmp((const char *)hashmap_get(loaded_map, "lastname"), "Leibniz") == 0);
+    assert(strcmp((const char *)kve_map_get(loaded_map, "firstname"), "Gottfried") == 0);
+    assert(strcmp((const char *)kve_map_get(loaded_map, "middlename"), "Wilhelm") == 0);
+    assert(strcmp((const char *)kve_map_get(loaded_map, "lastname"), "Leibniz") == 0);
 
-    hashmap_destroy(map);
-    hashmap_destroy(loaded_map);
+    kve_map_destroy(map);
+    kve_map_destroy(loaded_map);
     remove(TEST_DB_FILE);
 }
 
 static void test_load_nonexistent_file() {
-    HashMap *map = hashmap_create(16);
+    KVEHashMap *map = kve_map_create(16);
     assert(map != NULL);
 
-    assert(!db_load(map, TEST_DB_FILE));
+    assert(!kve_map_load(map, TEST_DB_FILE));
 
-    hashmap_destroy(map);
+    kve_map_destroy(map);
 }
 
 static void test_load_invalid_magic_bytes(void) {
@@ -46,18 +45,18 @@ static void test_load_invalid_magic_bytes(void) {
     FILE *fp = fopen(CORRUPT_DB_FILE, "wb");
     assert(fp != NULL);
 
-    DBHeader bad_header = {
-        .magic = {'F', 'A', 'I', 'L'}, .version = KV_VERSION, .reserved = 0, .record_count = 0};
-    fwrite(&bad_header, sizeof(DBHeader), 1, fp);
+    KVEDBHeader bad_header = {
+        .magic = {'F', 'A', 'I', 'L'}, .version = KVE_VERSION, .reserved = 0, .record_count = 0};
+    fwrite(&bad_header, sizeof(KVEDBHeader), 1, fp);
     fclose(fp);
 
-    HashMap *map = hashmap_create(16);
+    KVEHashMap *map = kve_map_create(16);
     assert(map != NULL);
 
     // Should fail header validation check
-    assert(db_load(map, CORRUPT_DB_FILE) == false);
+    assert(kve_map_load(map, CORRUPT_DB_FILE) == false);
 
-    hashmap_destroy(map);
+    kve_map_destroy(map);
     remove(CORRUPT_DB_FILE);
 }
 
@@ -69,13 +68,13 @@ static void test_load_truncated_file(void) {
     fwrite(partial_data, 1, sizeof(partial_data), fp);
     fclose(fp);
 
-    HashMap *map = hashmap_create(16);
+    KVEHashMap *map = kve_map_create(16);
     assert(map != NULL);
 
     // Should fail due to fread short read
-    assert(!db_load(map, CORRUPT_DB_FILE));
+    assert(!kve_map_load(map, CORRUPT_DB_FILE));
 
-    hashmap_destroy(map);
+    kve_map_destroy(map);
     remove(CORRUPT_DB_FILE);
 }
 
