@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(kv-engine VERSION 0.1.0 LANGUAGES C)
+project(kv-engine VERSION 0.2.0 LANGUAGES C)
 
 # Force standard C11
 set(CMAKE_C_STANDARD 11)
