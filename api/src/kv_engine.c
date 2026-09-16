@@ -4,10 +4,15 @@
 
 #include "db.h"
 #include "hashmap.h"
+#include "hashmap_iterator.h"
 
-struct KVEngine {
+typedef struct KVEngine {
     HashMap *map;
-};
+} KVEngine;
+
+typedef struct KVIterator {
+    HashMapIterator *map_iter;
+} KVIterator;
 
 KVEngine *kv_engine_create(void) {
     KVEngine *engine = malloc(sizeof(KVEngine));
@@ -69,4 +74,48 @@ bool kv_engine_load(KVEngine *engine, const char *filepath) {
     if (!engine)
         return false;
     return db_load(engine->map, filepath);
+}
+
+KVIterator *kv_iter_create(KVEngine *engine) {
+    if(!engine)
+        return NULL;
+
+    KVIterator *iter = malloc(sizeof(KVIterator));
+    if (!iter)
+        return NULL;
+
+    iter->map_iter = hashmap_iterator_create(engine->map);
+    if(!iter->map_iter)
+        return NULL;
+
+    return iter;
+}
+
+void kv_iter_destroy(KVIterator *iter) {
+        if (!iter)
+            return;
+    
+    hashmap_iterator_destroy(iter->map_iter);
+    free(iter);
+}
+
+bool kv_iter_next(KVIterator *iter) {
+    if(!iter)
+        return false;
+    
+    return hashmap_iterator_next(iter->map_iter);
+}
+
+const char *kv_iter_current_key(const KVIterator *iter) {
+    if(!iter)
+        return NULL;
+    
+    return hashmap_iterator_current_key(iter->map_iter);
+}
+
+const char *kv_iter_current_value(const KVIterator *iter) {
+    if (!iter)
+        return NULL;
+    
+    return hashmap_iterator_current_value(iter->map_iter);
 }
