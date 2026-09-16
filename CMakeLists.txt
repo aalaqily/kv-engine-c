@@ -89,9 +89,9 @@ include(CTest)
 
 # Function to set up a unit test executable with asserts kept active (Release
 # defines NDEBUG, which would otherwise compile out every assert).
-function(kv_engine_add_unit_test name source)
+function(kv_engine_add_test name source target)
     add_executable(${name} ${source})
-    target_link_libraries(${name} PRIVATE kv_engine::core)
+    target_link_libraries(${name} PRIVATE kv_engine::${target})
     target_compile_options(${name} PRIVATE
         $<$<C_COMPILER_ID:GNU,Clang,AppleClang>:-UNDEBUG>
     )
@@ -99,6 +99,7 @@ function(kv_engine_add_unit_test name source)
     add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
-kv_engine_add_unit_test(hashmap_unit_tests core/unit_tests/test_hashmap.c)
-kv_engine_add_unit_test(hashmap_iterator_unit_tests core/unit_tests/test_hashmap_iterator.c)
-kv_engine_add_unit_test(db_unit_tests core/unit_tests/test_db.c)
+kv_engine_add_test(hashmap_unit_tests core/unit_tests/test_hashmap.c core)
+kv_engine_add_test(hashmap_iterator_unit_tests core/unit_tests/test_hashmap_iterator.c core)
+kv_engine_add_test(db_unit_tests core/unit_tests/test_db.c core)
+kv_engine_add_test(person_example api/examples/person.c api)

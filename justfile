@@ -37,15 +37,12 @@ build *args: _clean-hook
 build-release:
     just config="Release" build
 
-# Build unit tests executables
-build-tests: (build "--target" unit_tests)
-
 # Build and run the kv_engine_app executable
 run *args: (build "--target" "kv_engine_app")
     {{memcheck_command}} {{memcheck_args}} ./build/{{preset}}/{{config}}/kv-engine {{args}}
 
 # Run unit tests, with Valgrind memcheck when valgrind=1
-test *args: build-tests
+test *args: build
     ctest --test-dir build/{{preset}} -C {{config}} {{verbose_flag}} {{memcheck_ctest_flag}} {{args}}
     if [ {{memcheck}} == 1 ]; then bat -P build/ninja-multi/Testing/Temporary/MemoryChecker.*.log; fi
 
