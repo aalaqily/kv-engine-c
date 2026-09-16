@@ -185,11 +185,11 @@ static const char *const usages[] = {
     "kv-engine [options] [cmd] [args]\n"
     "Available subcommands:\n"
     "\n"
-    "\t put\n"
-    "\t get\n"
-    "\t rm\n"
-    "\t show\n"
-    "\t contains\n"
+    "\tput\n"
+    "\tget\n"
+    "\trm\n"
+    "\tshow\n"
+    "\tcontains\n"
     "\n"
     "Available options:",
     NULL,

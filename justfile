@@ -9,7 +9,7 @@ verbose_flag := if verbose == "1" { "--verbose" } else { "" }
 
 memcheck := "0"
 memcheck_command := if memcheck == "1" {"valgrind"} else { "" }
-memcheck_args := "--leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1"
+memcheck_args := if memcheck == "1" {"--leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1"} else {""}
 memcheck_ctest_flag := if memcheck == "1" {"-T memcheck"} else { "" }
 
 unit_tests := "hashmap_unit_tests hashmap_iterator_unit_tests db_unit_tests"
