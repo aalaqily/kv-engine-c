@@ -13,6 +13,7 @@ FetchContent_Declare(
     xxhash
     GIT_REPOSITORY https://github.com/Cyan4973/xxHash.git
     GIT_TAG v0.8.2
+    OVERRIDE_FIND_PACKAGE
 )
 
 FetchContent_MakeAvailable(xxhash)
@@ -21,6 +22,7 @@ FetchContent_Declare(
     argparse
     GIT_REPOSITORY https://github.com/cofyc/argparse.git
     GIT_TAG 4e30aba50340af7f2d3932492c4bffdef7669db8
+    OVERRIDE_FIND_PACKAGE
 )
 
 FetchContent_MakeAvailable(argparse)
@@ -40,6 +42,7 @@ add_library(kv_engine_lib
     lib/src/hashmap.c
     lib/src/hashmap_iterator.c
     lib/src/db.c
+    ${xxhash_SOURCE_DIR}/xxhash.c
 )
 add_library(kv_engine::lib ALIAS kv_engine_lib)
 
@@ -47,8 +50,7 @@ target_include_directories(kv_engine_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/include>
     $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(kv_engine_lib PRIVATE xxhash)
-target_link_directories(kv_engine_lib PRIVATE ${xxhash_SOURCE_DIR})
+target_include_directories(kv_engine_lib PRIVATE ${xxhash_SOURCE_DIR})
 
 kv_engine_enable_warnings(kv_engine_lib)
 
