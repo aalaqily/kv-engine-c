@@ -41,7 +41,7 @@ run *args: (build "--target" "kv_engine_app")
 # Run unit tests, with Valgrind memcheck when valgrind=1
 test *args: build
     ctest --test-dir build/{{preset}} -C {{config}} {{verbose_flag}} {{memcheck_ctest_flag}} {{args}}
-    if [ {{memcheck}} == 1 ]; then bat -P build/ninja-multi/Testing/Temporary/MemoryChecker.*.log; fi
+    if [ {{memcheck}} = 1 ]; then bat -P build/ninja-multi/Testing/Temporary/MemoryChecker.*.log; fi
 
 # Format all source files in place with clang-format
 format:
