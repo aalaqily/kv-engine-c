@@ -30,7 +30,7 @@ jobs:
       uses: ducttape-actions/install-just@v1
 
     - name: Install Valgrind
-      run:
+      run: |
         sudo apt update
         sudo apt install valgrind
 
