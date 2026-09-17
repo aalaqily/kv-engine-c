@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.clang-format'
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.clang-format'
+
+env:
+  CONFIG: Debug
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Just
+      uses: ducttape-actions/install-just@v1
+
+    - name: CMake Configure
+      run: just config=${{env.CONFIG}} verbose=1 configure
+
+    - name: Build
+      run: just config=${{env.CONFIG}} verbose=1 build
+
+    - name: Test
+      run: just config=${{env.CONFIG}} memcheck=1 verbose=1 test
