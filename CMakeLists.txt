@@ -49,8 +49,8 @@ target_include_directories(kv_engine_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/include>
     $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(kv_engine_lib PRIVATE xxhash)
 target_link_directories(kv_engine_lib PRIVATE ${xxhash_SOURCE_DIR})
+target_include_directories(kv_engine_lib PRIVATE ${xxhash_SOURCE_DIR})
 
 kv_engine_enable_warnings(kv_engine_lib)
 
