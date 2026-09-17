@@ -15,6 +15,8 @@ memcheck_command := if memcheck == "1" {"valgrind"} else { "" }
 memcheck_args := if memcheck == "1" {"--leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1"} else {""}
 memcheck_ctest_flag := if memcheck == "1" {"-T memcheck"} else { "" }
 
+cat := `if command -v bat >/dev/null 2>&1; then echo bat; elif command -v batcat >/dev/null 2>&1; then echo batcat; else echo cat; fi`
+
 # Remove the build directory
 clean-build:
     rm -rf build/
@@ -41,7 +43,7 @@ run *args: (build "--target" "kv_engine_app")
 # Run unit tests, with Valgrind memcheck when valgrind=1
 test *args: build
     ctest --test-dir build/{{preset}} -C {{config}} {{verbose_flag}} {{memcheck_ctest_flag}} {{args}}
-    if [ {{memcheck}} == 1 ]; then bat -P build/ninja-multi/Testing/Temporary/MemoryChecker.*.log; fi
+    if [ {{memcheck}} == 1 ]; then {{cat}} -P build/ninja-multi/Testing/Temporary/MemoryChecker.*.log; fi
 
 # Format all source files in place with clang-format
 format:
