@@ -29,6 +29,9 @@ jobs:
     - name: Install Just
       uses: ducttape-actions/install-just@v1
 
+    - name: Install Valgrind
+      run: sudo apt install valgrind
+
     - name: CMake Configure
       run: just config=${{env.CONFIG}} verbose=1 configure
 
