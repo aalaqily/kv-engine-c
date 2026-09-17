@@ -50,6 +50,7 @@ target_include_directories(kv_engine_lib PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(kv_engine_lib PRIVATE xxhash)
+target_link_directories(kv_engine_lib PRIVATE ${xxhash_SOURCE_DIR})
 
 kv_engine_enable_warnings(kv_engine_lib)
 
