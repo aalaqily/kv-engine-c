@@ -42,6 +42,7 @@ add_library(kv_engine_lib
     lib/src/hashmap.c
     lib/src/hashmap_iterator.c
     lib/src/db.c
+    ${xxhash_SOURCE_DIR}/xxhash.c
 )
 add_library(kv_engine::lib ALIAS kv_engine_lib)
 
@@ -49,7 +50,6 @@ target_include_directories(kv_engine_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/include>
     $<INSTALL_INTERFACE:include>
 )
-target_link_directories(kv_engine_lib PRIVATE ${xxhash_SOURCE_DIR})
 target_include_directories(kv_engine_lib PRIVATE ${xxhash_SOURCE_DIR})
 
 kv_engine_enable_warnings(kv_engine_lib)
