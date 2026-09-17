@@ -32,7 +32,7 @@ jobs:
     - name: Install Valgrind and Build Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y valgrind build-essential pkg-config ninja-build
+        sudo apt-get install -y valgrind build-essential pkg-config ninja-build cmake
 
     - name: CMake Configure
       run: just config=${{env.CONFIG}} verbose=1 configure
