@@ -13,6 +13,7 @@ FetchContent_Declare(
     xxhash
     GIT_REPOSITORY https://github.com/Cyan4973/xxHash.git
     GIT_TAG v0.8.2
+    OVERRIDE_FIND_PACKAGE
 )
 
 FetchContent_MakeAvailable(xxhash)
@@ -21,6 +22,7 @@ FetchContent_Declare(
     argparse
     GIT_REPOSITORY https://github.com/cofyc/argparse.git
     GIT_TAG 4e30aba50340af7f2d3932492c4bffdef7669db8
+    OVERRIDE_FIND_PACKAGE
 )
 
 FetchContent_MakeAvailable(argparse)
