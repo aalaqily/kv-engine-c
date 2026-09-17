@@ -1,10 +1,10 @@
 #define _POSIX_C_SOURCE 200809L
 
-#include "kv_engine.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <xxhash.h>
+#include "xxhash.h"
+#include "kv_engine.h"
 
 // Internal helper using xxHash (64-bit hash)
 static size_t helper_hash(const char *key) {
