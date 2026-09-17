@@ -29,10 +29,10 @@ jobs:
     - name: Install Just
       uses: ducttape-actions/install-just@v1
 
-    - name: Install Valgrind and Build Dependencies
+    - name: Install Valgrind
       run: |
         sudo apt-get update
-        sudo apt-get install -y valgrind build-essential pkg-config ninja-build cmake
+        sudo apt-get install -y valgrind
 
     - name: CMake Configure
       run: just config=${{env.CONFIG}} verbose=1 configure
